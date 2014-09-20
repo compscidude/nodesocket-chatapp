@@ -13,6 +13,11 @@ Extra features added
 - Displays everyone that are in the same room.
 - Able to send private message to other users in the same room by click on the user name on the side bar.
 
+How to run
+---------------
+You must have node.js installed. If you do, node server.js should start the server.
+Then visit localhost:3000 as the server is set to listen port 3000.
+
 ![Screenshot](http://imgur.com/Qs8z9Yb.png?raw=true)
 ![Screenshot](http://imgur.com/rEHmRxC.png?raw=true)
 ![Screenshot](http://imgur.com/a7hMkK8.png?raw=true)
