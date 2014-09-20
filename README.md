@@ -9,7 +9,7 @@ Extra features added
 - Displays total number of users online.
 - Displays the room you are currently in.
 - Users are able to change to a different chat room.
-- Users are able to create their own chat room (Unique room name only).
+- Users are able to create their own chat room (Unique name only).
 - Displays everyone that are in the same room.
 - Able to send private message to other users in the same room by click on the user name on the side bar.
 
