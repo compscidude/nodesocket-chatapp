@@ -1,0 +1,120 @@
+
+
+
+/*  --------------  Settings Related -------------------- */
+
+body{
+	font-family: "Gloria Hallelujah", "arial";
+}
+
+[class*="span"].centred {
+  margin-left: auto;
+  margin-right: auto;
+  float: none;
+}
+
+.top5 { margin-top:5px; }
+.top7 { margin-top:7px; }
+.top10 { margin-top:10px; }
+.top15 { margin-top:15px; }
+.top17 { margin-top:17px; }
+.top30 { margin-top:30px; }
+
+.left10 {margin-left: 10px;}
+.left15 {margin-left: 15px;}
+.left25 {margin-left: 25px;}
+.left30 {margin-left: 30px;}
+
+.text-center{
+	text-align: center;
+}
+
+.text-right{
+	text-align: right;
+}
+
+
+
+/* ------------------ Custom Settings ------------------- */
+
+.chatwindow {
+	border: 1px solid black;
+	background: #FFFFFF;
+	height: 400px;
+}
+
+.chatarea {
+	margin: 0 auto;
+	padding: 0;
+	border: 1px solid red;
+
+}
+
+#chatmessages{
+	padding: 15px;
+	padding-top:5px;
+	padding-bottom: 0;
+	max-height: 390px;
+	overflow: scroll;
+}
+
+#usersOnline{
+	min-height: 205px;
+	max-height: 205px;
+	overflow: scroll;
+}
+
+#usersOnline:hover{
+	overflow: scroll;
+}
+
+li{
+	cursor: pointer;
+	list-style-type: none;
+}
+
+#usersOnline li{
+	cursor: pointer;
+	list-style-type: none;
+	margin-top: 5px;
+}
+
+#usersOnline li:hover{
+	color: blue;
+}
+
+#chatRooms{
+	margin: 0;
+	padding: 0;
+}
+
+#chatRoomsList {
+	height: 153px;
+	overflow-y: scroll;
+}
+
+#chatRoomsList p{
+	cursor: pointer;
+}
+
+#chatRoomsList p:hover{
+	color: blue;
+}
+
+.pmsg{
+	color: red;
+}
+
+.msg{
+	margin: 0;
+	padding: 0;
+	line-height: 1.5em;
+}
+
+.msgsent{
+	color: #0033CC;
+}
+
+.clientmsg{
+	color: #2EB51F;
+}

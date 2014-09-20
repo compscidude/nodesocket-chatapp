@@ -1,0 +1,11 @@
+{
+  "author": "kevin",
+  "version": "0.0.1",
+  "description:": "chatapp for U of T students",
+  "name": "chatapp",
+  "main": "server.js",
+  "dependencies": {
+    "express": "~4.0.0",
+    "socket.io": "^1.1.0"
+  }
+}
