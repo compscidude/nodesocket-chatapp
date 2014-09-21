@@ -15,8 +15,8 @@ Extra features added
 
 How to run
 ---------------
-You must have node.js installed. If you do, node server.js should start the server.
-Then visit localhost:3000 as the server is set to listen port 3000.
+If node.js is installed, run the command; node server.js 
+(May have to delete node_module folder and run npm install prior to running the server )
 
 ![Screenshot](http://imgur.com/Qs8z9Yb.png?raw=true)
 ![Screenshot](http://imgur.com/rEHmRxC.png?raw=true)
