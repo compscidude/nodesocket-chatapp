@@ -1,306 +1,97 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title> Socket.io Chat application </title>
-	<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/jquery-ui-bootstrap/0.5pre/assets/css/bootstrap.min.css">
 
-	<link href="css/style.css" rel="stylesheet">
+<head>
+    <title> Socket.io Chat application </title>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/jquery-ui-bootstrap/0.5pre/assets/css/bootstrap.min.css">
+
+    <link href="css/style.css" rel="stylesheet">
 </head>
 
-	<!-- This is all it takes to get the client set up -->
-	<!-- And gives access to the global io() -->
-	<script src="/socket.io/socket.io.js"></script>
-
-	<body>
-	
-		<a href="https://github.com/compscidude/nodesocket-chatapp"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/567c3a48d796e2fc06ea80409cc9dd82bf714434/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png"></a>
-
-
-	<div class="container-fluid fluid top30">
-
-
-	  <div class="row-fluid">
-			<div class="row page-header text-center">
-				 <h1> Node.js + Socket.io v1.0 
-				 	<br> Chat application </h1> 
-				 <small> With Backbone.js </small>
-			</div>
-
-			<div class="row span8 offset1"> 
-				<div id="userCount"></div>
-			 </div>
-
-			<div id="chatarea" class="span8 offset1">	 
-					<div id="chat" class="chatwindow"> 
-							<div id="chatmessages"> </div>
-					</div>
-					<input id="chat_input" class="row-fluid span12 top5" type="text" placeholder="Type here to chat"> </input> 
-			</div>
-
-			<div class="span2">
-				<div id="sideBar">
-					 You are in room: <span id="channel" style="color: orange"> </span> 
-					<div id="usersOnline"> </div>
-					<div id="chatRooms"> 
-						<p class="text-success"> Chatrooms </p>
-						<div id="chatRoomsList"></div>
-						<input id="chatroom_input" class="span12" type="text" placeholder="Create a new chatroom"> </input>
-					</div>
-				</div>
-			</div>
-		</div>
-
-
-
-			<!-- Private Message Modal -->
-			<div class="modal fade" style="display: none" id="myModal">
-				  <div class="modal-header">
-				    <a class="close" data-dismiss="modal">×</a>
-				    <h3>Private Message</h3>
-				  </div>
-
-				  <div class="modal-body">
-				  	<p style="float:left"> To: </p> <label id="msg_to"></label> 
-				  	<label id="msg_to_id" style="display:none"></label>
-				  	<label id="msg_from" style="clear: both"></label>
-				  	<label id="messagebox"> Message </label>
-				    <textarea rows="9" class="span5" id="privateMessage"> </textarea>
-				  </div>
-				  <div class="modal-footer">
-				    <a href="#" class="btn" data-dismiss="modal">Close</a>
-				    <a href="#" id="send" class="btn btn-primary">Send</a>
-				  </div>
-			</div>
-
-		<!-- closes off the main row fluid -->
-		</div>
-
-	<!-- closes off the container -->
-	</div>
-	
-
-	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
-	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js"></script>
-	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/modal.js"></script>
-	<link href="//fonts.googleapis.com/css?family=Gloria+Hallelujah:400" rel="stylesheet" type="text/css">
-
-
-	<script>
-
-	$(document).ready(function() {
-
-		var username = prompt("Please enter your name");
-
-		window.socket = io();
-		// immediately trigger a username event so server can store this user in the array.
-		window.socket.emit("new username", username);
-
-		window.socket.on('chat message', function(user, msg){
-			window.chatView.recieveMessage(user, msg);
-		});
-
-		window.socket.on('users count', function(userCount){
-			window.sideBar.updateUserCount(userCount);
-		});
-
-		window.socket.on('users online', function(usersOnline){
-			window.sideBar.updateUsersOnline(usersOnline);
-		});
-
-		window.socket.on('channel users', function(users){
-			window.sideBar.updateChannelUsers(users);
-		});
-		
-		window.socket.on('recieve private msg', function(from, msg){
-			window.chatView.recievePrivateMessage(from, msg)
-		});
-
-		window.socket.on('chatrooms', function(chatrooms){
-			window.sideBar.listChatrooms(chatrooms);
-		});
-
-		window.socket.on('update chatroom', function(roominfo){
-			window.sideBar.updateChatroom(roominfo);
-		});		
-
-
-
-		// ========== chatView: update the chat message and listen to user input.
-		// =========================================================================
-
-		var chatView = Backbone.View.extend({
-			el: $('#chatarea'),
-
-			initialize: function(){
-				this.userInput = $('#chat_input');
-				this.userInput.focus();
-			}, 
-
-			events: {
-				"keypress #chat_input" : "checkMessage"
-			},
-		
-			checkMessage: function(e){
-				if (e.keyCode == 13){
-					this.sendMessage(username, this.userInput.val());
-				}
-			},
-
-			sendMessage: function(user, msg){
-				// locally add it to our client's chat
-				this.recieveMessage(user, msg, 1);
-				// Send it to the server
-				socket.emit('chat message', username, msg);
-   				this.userInput.val('');
-    			return false;
-			},
-
-			recieveMessage: function(user, msg, flag){
-					
-				// keep the chat visible by scrolling to the latest message
-				scrollDown('#chatmessages');
-				// if flag is 1 then we append the message locally (this client wrote it)
-				if (flag === 1){
-					$('#chatmessages').append('<p class="msg clientmsg"> You: ' + msg + '</p>');
-					return;
-				}
-
-				// else we append it normally.
-				$('#chatmessages').append('<p class="msg">' + user + ': '+ msg);
-			},
-
-			PrivateMessageSent: function(to){
-				$('#chatmessages').append('<p class="msg msgsent"> You sent a private message to: ' + to + '</p>');
-			},
-
-			recievePrivateMessage: function(from, msg){
-				// we can access both from.id and from.name if we wanted to add a reply system
-
-				// for simplicity, we will add this private message to our chat window but in different font style and/or different font colour so its more readable (and also add flash notification for incoming messages)
-				$('#chatmessages').append('<p class="pmsg"> Private message from ' + from + ' : ' + msg + '</p>' );
-			}
-
-		}); // close our chatView
-
-
-		// ============== SideBar: display active users in the channel / chatrooms
-		// =========================================================================
-
-		var sideBar = Backbone.View.extend({
-			el: $('#sideBar'),
-			initialize: function(){
-				this.userCount = $('#userCount');
-				this.userCount.text("Users online: ");
-				this.newroom_input = $('#chatroom_input');
-			},
-			events: {
-				"click #usersOnline li" : "privateMessage",
-				"click #chatRoomsList p" : "joinChatroom",
-				"keypress #chatroom_input" : "createRoom"
-				
-			},
-			updateUserCount: function(userCount) {
-				var word = userCount > 1 ? 'users' : 'user';
-				this.userCount.html('<p class="text-success">' + userCount + " " + word + " online </p>");
-			},
-
-			updateUsersOnline: function(usersOnline){
-				$("#usersOnline").html("");
-				_.each(usersOnline, function(user){
-					$('#usersOnline').append("<li div='user' id=" + user.id + " name='" + user.name + "'>" +
-						'<i class="icon-user"></i>' + user.name + '</li>');
-				});
-
-				scrollDown("#usersOnline");
-			},
-
-			// fill in the modal with data
-			privateMessage: function(event){
-				var target = event.target;
-				// create a modal to fill out private message form.
-				var targetId = target.getAttribute('id');
-				var targetName = target.getAttribute('name');
-
-				// instantiate our modal and fill with correct values
-				$('#msg_to_id').text(targetId);
-				$('#msg_to').text(targetName);
-				$('#msg_from').text("From: " + username);
-				$('#myModal').modal({'show': true});
-			},
-
-
-			createRoom: function(e){
-				if (e.keyCode == 13){
-					var newroom = this.newroom_input.val();
-					this.newroom_input.val('');
-
-					// send the room information to the server
-					// [First append it to the room list]
-
-					scrollDown('#chatRoomsList');
-					socket.emit('create chatroom', newroom);
-				}
-			},
-
-			joinChatroom: function(e){
-				var target = e.target;
-				var roomName = target.innerHTML;
-
-				socket.emit('join chatroom', roomName);
-
-				// clear and refresh the chat text
-				$('#chatmessages').html('');
-			},
-
-			listChatrooms: function(chatrooms){
-				
-				$('#chatRoomsList').text('');
-				_.each(chatrooms, function(chatroom){
-					$('#chatRoomsList').append('<p>' + chatroom + '</p>');
-				});
-
-				scrollDown('#chatRoomsList');
-			},
-
-			updateChatroom: function(roominfo){
-				$('#channel').text(roominfo.room);
-				// update the users so it displays people in same room
-				this.updateUsersOnline(roominfo.users);
-			}
-		}); // close our sideBar view.
-
-		// Some helper methods
-		var scrollDown = function(div) {
-			$(div).animate({ scrollTop: $(div)[0].scrollHeight},"fast");
-		}
-
-		// initialize our backbone views 
-		window.chatView = new chatView();
-		window.sideBar = new sideBar();
-
-	  }); // close our jquery $ on demand function.
-
-
-		// Handle modal data when user clicks send button
-		$('#send').click(function(){
-			// Let's process the data here
-			var targetId = $('#msg_to_id').text(); // The reciever socket id
-			var targetName = $('#msg_to').text();
-			var message = $('#privateMessage').val();
-
-			// send the private message (attach a callback to this to get a response)
-			socket.emit('private message', targetId, message);
-			// Notify the sender that the message has been sent.
-			window.chatView.PrivateMessageSent(targetName);
-
-			// turn off the modal and clear the data
-			$('#myModal').modal('toggle');
-			$('#privateMessage').val('');
-		});
-
-	</script>
-
-	</body>
+<!-- This is all it takes to get the client set up -->
+<!-- And gives access to the global io() -->
+<script src="/socket.io/socket.io.js"></script>
+<script src="/app.js"></script>
+
+<body>
+
+    <a href="https://github.com/compscidude/nodesocket-chatapp"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/567c3a48d796e2fc06ea80409cc9dd82bf714434/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png"></a>
+
+
+    <div class="container-fluid fluid top30">
+
+
+        <div class="row-fluid">
+            <div class="row page-header text-center">
+                <h1> Node.js + Socket.io v1.0
+                    <br> Chat application </h1>
+                <small> With Backbone.js </small>
+            </div>
+
+            <div class="row span8 offset1">
+                <div id="userCount"></div>
+            </div>
+
+            <div id="chatarea" class="span8 offset1">
+                <div id="chat" class="chatwindow">
+                    <div id="chatmessages"> </div>
+                </div>
+                <input id="chat_input" class="row-fluid span12 top5" type="text" placeholder="Type here to chat"> </input>
+            </div>
+
+            <div class="span2">
+                <div id="sideBar">
+                    You are in room: <span id="channel" style="color: orange"> </span>
+                    <div id="usersOnline"> </div>
+                    <div id="chatRooms">
+                        <p class="text-success"> Chatrooms </p>
+                        <div id="chatRoomsList"></div>
+                        <input id="chatroom_input" class="span12" type="text" placeholder="Create a new chatroom"> </input>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Private Message Modal -->
+        <div class="modal fade" style="display: none" id="myModal">
+            <div class="modal-header">
+                <a class="close" data-dismiss="modal">×</a>
+                <h3>Private Message</h3>
+            </div>
+
+            <div class="modal-body">
+                <p style="float:left"> To: </p> <label id="msg_to"></label>
+                <label id="msg_to_id" style="display:none"></label>
+                <label id="msg_from" style="clear: both"></label>
+                <label id="messagebox"> Message </label>
+                <textarea rows="9" class="span5" id="privateMessage"> </textarea>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn" data-dismiss="modal">Close</a>
+                <a href="#" id="send" class="btn btn-primary">Send</a>
+            </div>
+        </div>
+
+        <!-- closes off the main row fluid -->
+    </div>
+
+    <!-- closes off the container -->
+    </div>
+
+
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/modal.js"></script>
+    <link href="//fonts.googleapis.com/css?family=Gloria+Hallelujah:400" rel="stylesheet" type="text/css">
+
+
+    <script>
+    </script>
+
+</body>
+
 </html>
